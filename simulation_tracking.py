@@ -37,8 +37,8 @@ mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episode
 # inits
 frame_skip = 1  # const fixed in other HalfCheetahEnv class (change in half_cheetah_gait_v#.py file)
 MDP_TS = 5  # agent should act/observe every 5 sim timesteps
-sim_timesteps = 600  # num of total timsteps
-start_time = 500  # heuristic from watching simulation
+sim_timesteps = 2000  # num of total timsteps
+start_time = 1000  # heuristic from watching simulation
 # data collection
 state_list = np.empty((sim_timesteps - (start_time - 1), 19))  # properly sized for delayed start data collection
 action_list = np.empty((sim_timesteps - (start_time - 1), 7))

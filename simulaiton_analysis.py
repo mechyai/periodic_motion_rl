@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-states = pd.read_pickle('Experimental-Data/testExp_v0_v0_TD3_500_500_5_states.csv')
+states = pd.read_pickle('Experimental-Data/testExp_v0_v0_TD3_500_500_1_states.csv')
 
 """
 state_labels = ['Timestep',  # units in [m] and [rad]
@@ -18,14 +18,54 @@ action_labels =['Timestep',  # units in [N-m]
                   'ft_torq', 'fs_torq', 'ff_torq']  # front t(high), s(hin), f(oot) joint torque
 """
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
+# POSITION 3D Phase Plot
+fig_pos = plt.figure()
+ax_pos = plt.axes(projection='3d')
+# front leg
+ffoot_z = states['ff_pos']
+fshin_y = states['fs_pos']
+fthigh_x = states['ft_pos']
+# back leg
+bfoot_z = states['bf_pos']
+bshin_y = states['bs_pos']
+bthigh_x = states['bt_pos']
 
-# Data for a three-dimensional line
-foot_z = states['bf_pos']
-shin_y = states['bs_pos']
-thigh_x = states['bt_pos']
+# 3D plotting
+ax_pos.plot3D(fthigh_x, fshin_y, ffoot_z, 'o-', linewidth=1, markersize=1, label='Front Leg')
+ax_pos.plot3D(bthigh_x, bshin_y, bfoot_z, 'o-', linewidth=1, markersize=1, label='Back Leg')
+# plot labeling and config
+ax_pos.set_title('Leg Joint Position')
+ax_pos.set_xlabel('Ankle Angle (rad)')
+ax_pos.set_ylabel('Knee Angle (rad)')
+ax_pos.set_zlabel('Hip Angle (rad)')
+ax_pos.legend()
+ax_pos.grid(True)
 
-ax.plot3D(thigh_x, shin_y, foot_z)
+# VELOCITY 3D Phase Plot
+fig_vel = plt.figure()
+ax_vel = plt.axes(projection='3d')
+# front leg
+ffoot_z = states['ff_vel']
+fshin_y = states['fs_vel']
+fthigh_x = states['ft_vel']
+# back leg
+bfoot_z = states['bf_vel']
+bshin_y = states['bs_vel']
+bthigh_x = states['bt_vel']
 
-# ax.scatter3D(xdata, ydata, zdata, c=zdata, cmap='Greens');
+# 3D plotting
+ax_vel.plot3D(fthigh_x, fshin_y, ffoot_z, 'o-', linewidth=1, markersize=1,  label='Front Leg')
+ax_vel.plot3D(bthigh_x, bshin_y, bfoot_z, 'o-', linewidth=1, markersize=1, label='Back Leg')
+# plot labeling and config
+ax_vel.set_title('Leg Joint Velocity')
+ax_vel.set_xlabel('Ankle Velocity (rad/s)')
+ax_vel.set_ylabel('Knee Velocity (rad/s)')
+ax_vel.set_zlabel('Hip Velocity (rad/s)')
+ax_vel.legend()
+ax_vel.grid(True)
+
+# POSITION vs Time 2D Line Plot
+timestep = states['Timestep']
+
+fig_tpos = plt.figure()
+plt.plot(timestep, ffoot_z)
