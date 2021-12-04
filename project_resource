@@ -1,0 +1,40 @@
+Half-Cheetah
+- Class https://github.com/openai/gym/blob/master/gym/envs/mujoco/half_cheetah.py
+- MuJoCo XML https://github.com/openai/gym/blob/master/gym/envs/mujoco/assets/half_cheetah.xml
+
+Important Paths
+-SB3
+/home/jpc/anaconda3/envs/mujoco210_openai_gym/lib/python3.9/site-packages/stable_baselines3
+-Gym MuJoCo Envs
+/home/jpc/anaconda3/envs/mujoco210_openai_gym/lib/python3.9/site-packages/gym/envs/mujoco
+- Gym MuJoCo XML Assets
+/home/jpc/anaconda3/envs/mujoco210_openai_gym/lib/python3.9/site-packages/gym/envs/mujoco/assets/
+- mujoco_py
+/home/jpc/anaconda3/envs/mujoco210_openai_gym/lib/python3.9/site-packages/mujoco_py
+- registry of environments (can add my custom envs too)
+/home/jpc/anaconda3/envs/mujoco210_openai_gym/lib/python3.9/site-packages/gym/envs/__init__.py
+
+"half_cheetah_v#" contains init of XML model and defines observations, reward function, reset init, etc
+"half_cheetah.xml" contains MuJoCo model of cheetah, scene, environment, cameras, etc
+
+Already trained RL agents
+https://github.com/DLR-RM/rl-baselines3-zoo#enjoy-a-trained-agent
+(MuJoCo compatibility) https://github.com/DLR-RM/rl-baselines3-zoo#mujoco-environments
+** How to use pre-trained agent in python script?
+Pre-trained algs for each env can be found in rl-baselines3-zoo/rl-trained-agents - then from the proper env folder and
+alg folder, you must take the .zip file of the model and move it to the directory of your script. Then you can use all
+the load/save/train command with it
+    - saving/loading models https://stable-baselines3.readthedocs.io/en/master/guide/save_format.html#
+    - ex train/save/load https://stable-baselines3.readthedocs.io/en/master/guide/examples.html#basic-usage-training-saving-loading
+
+How to create custom gym env - guide
+https://github.com/openai/gym/blob/master/docs/creating_environments.md
+https://stable-baselines3.readthedocs.io/en/master/guide/custom_env.html
+https://colab.research.google.com/github/araffin/rl-tutorial-jnrr19/blob/master/5_custom_gym_env.ipynb
+(challenge is creating pip package and installing)
+
+** How to modify local gym repo to create custom environments
+1) copy & paste Python environment file (ex. half_cheetah.py) in envs/mujoco and corresponding model XML file in
+ envs/mujoco/assets, and rename (if making changes to 1 or both)
+2) update registry in envs/__init__.py with details of new env
+ [rename of register ID must follow reg exp in registry.py]
