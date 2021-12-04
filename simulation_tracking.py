@@ -8,11 +8,6 @@ import mujoco_py
 from stable_baselines3 import TD3, SAC, PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 
-# os.system('source ~/.bashrc')
-# os.environ['LD_PRELOAD'] = '/usr/lib/x86_64-linux-gnu/libGLEW.so'
-# os.environ['LD_LIBRARY_PATH'] = '/home/jpc/.mujoco/mujoco210/bin'
-# os.environ['LD_LIBRARY_PATH'] = '/usr/lib/nvidia'
-
 
 # create environment
 env = gym.make('HalfCheetah-gait-v0')
@@ -40,22 +35,24 @@ agent = TD3.load('td3_HalfCheetah-v3', env=env)  # more optional params
 mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes=10)
 
 # inits
-frame_skip = 5  # const fixed in other HalfCheetahEnv class, half_cheetah_...py file
-sim_renders = 200  # (num of total timsteps = sim_renders * frame_skip)
-start_time = 500 // frame_skip  # heuristic from watching simulation (actual sim timestep / frame_skip)
+frame_skip = 1  # const fixed in other HalfCheetahEnv class (change in half_cheetah_gait_v#.py file)
+MDP_TS = 5  # agent should act/observe every 5 sim timesteps
+sim_timesteps = 600  # num of total timsteps
+start_time = 500  # heuristic from watching simulation
 # data collection
-state_list = np.empty((sim_renders - (start_time - 1), 19))  # properly sized for delayed start data collection
-action_list = np.empty((sim_renders - (start_time - 1), 7))
+state_list = np.empty((sim_timesteps - (start_time - 1), 19))  # properly sized for delayed start data collection
+action_list = np.empty((sim_timesteps - (start_time - 1), 7))
 
 # run simulation
 obs = env.reset()
-for i in range(sim_renders):
-    action, _states = agent.predict(obs, deterministic=True)
-    # collect data
+for i in range(sim_timesteps):
+    if i * frame_skip % MDP_TS == 0:  # only act at 5 sim timestep increments, maintain action for entire segment
+        action, _states = agent.predict(obs, deterministic=True)
+    # collect data at every simulation timestep, not action, for smoother data
     obs, rewards, dones, info = env.step(action)
     env.render()
     # collect sim data
-    if i >= start_time - 1:  # delay start to reach steady state motion
+    if i > start_time - 1:  # delay start to reach steady state motion
         x_pos = info['x_position']  # removed from obs since x_pos is used to compute avg vel, add to state
         state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs])  # prepend timestep info
         action_list[i - start_time + 1] = np.concatenate([[i*frame_skip], action])  # prepend timestep info
@@ -82,9 +79,9 @@ exp_name = 'testExp'
 env_ver = 'v0'
 xml_ver = 'v0'
 algo = 'TD3'
-sim_len = sim_renders * frame_skip - start_time
-sim_start = start_time
-file_name = f'{exp_name}_{env_ver}_{xml_ver}_{algo}_{sim_len}_{sim_start}_{frame_skip}_'
+sim_len = (sim_timesteps - start_time)
+# naming
+file_name = f'{exp_name}_{env_ver}_{xml_ver}_{algo}_{sim_len}_{start_time}_{frame_skip}_'
 folder = 'Experimental-Data/'
 # saving experiments, df -> .csv
 state_df.to_pickle(folder + file_name + 'states.csv')
