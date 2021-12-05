@@ -21,7 +21,7 @@ HalfCheetah has pretrained A2C, PPO, SAC, TD3, & TQC  https://github.com/DLR-RM/
 Mean reward performance for HalfCheetah-V3 TQC >> TD3 >= SAC > PPO > A2C https://github.com/DLR-RM/rl-baselines3-zoo/blob/master/benchmark.md
 """
 # load trained agent from ZIP
-agent = TD3.load('td3_HalfCheetah-v3', env=env)  # more optional params
+agent = TD3.load('Pretrained-Agents/SB3/td3_HalfCheetah-v3.zip', env=env)  # more optional params
 
 # train the agent
 # agent.learn(total_timesteps=int(1e5))
@@ -37,8 +37,8 @@ mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episode
 # inits
 frame_skip = 1  # const fixed in other HalfCheetahEnv class (change in half_cheetah_gait_v#.py file)
 MDP_TS = 5  # agent should act/observe every 5 sim timesteps
-sim_timesteps = 2000  # num of total timsteps
-start_time = 1000  # heuristic from watching simulation
+sim_timesteps = 600  # num of total timsteps
+start_time = 300  # heuristic from watching simulation
 # data collection
 state_list = np.empty((sim_timesteps - (start_time - 1), 19))  # properly sized for delayed start data collection
 action_list = np.empty((sim_timesteps - (start_time - 1), 7))
@@ -74,18 +74,20 @@ action_labels =['Timestep',  # units in [N-m]
 state_df = pd.DataFrame(state_list, columns=state_labels)
 action_df = pd.DataFrame(action_list, columns=action_labels)
 
-# output, experiment naming convention
-exp_name = 'testExp'
-env_ver = 'v0'
-xml_ver = 'v0'
-algo = 'TD3'
-sim_len = (sim_timesteps - start_time)
-# naming
-file_name = f'{exp_name}_{env_ver}_{xml_ver}_{algo}_{sim_len}_{start_time}_{frame_skip}_'
-folder = 'Experimental-Data/'
-# saving experiments, df -> .csv
-state_df.to_pickle(folder + file_name + 'states.csv')
-state_df.to_pickle(folder + file_name + 'actions.csv')
+save_experiment = True
+if save_experiment:
+    # output, experiment naming convention
+    exp_name = 'smallSample'
+    env_ver = 'v0'
+    xml_ver = 'v0'
+    algo = 'TD3'
+    sim_len = (sim_timesteps - start_time)
+    # naming
+    file_name = f'{exp_name}_{env_ver}_{xml_ver}_{algo}_{sim_len}_{start_time}_{frame_skip}_'
+    folder = 'Experimental-Data/'
+    # saving experiments, df -> .csv
+    state_df.to_pickle(folder + file_name + 'states.csv')
+    state_df.to_pickle(folder + file_name + 'actions.csv')
 
 
 
