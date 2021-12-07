@@ -38,5 +38,6 @@ for i in range(1000):
     # print(action)
     # obs, rewards, dones, info = env.step(action)
     env.render()
-    env.step(env.action_space.sample())
+    obs, rewards, dones, info = env.step(env.action_space.sample())
+    print(info["toe_pos"])
 

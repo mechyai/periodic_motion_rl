@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os
+import imageio
 
 import gym
 import mujoco_py
@@ -37,25 +37,32 @@ mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episode
 # inits
 frame_skip = 1  # const fixed in other HalfCheetahEnv class (change in half_cheetah_gait_v#.py file)
 MDP_TS = 5  # agent should act/observe every 5 sim timesteps
-sim_timesteps = 600  # num of total timsteps
+sim_timesteps = 1000  # num of total timsteps
 start_time = 300  # heuristic from watching simulation
 # data collection
-state_list = np.empty((sim_timesteps - (start_time - 1), 19))  # properly sized for delayed start data collection
+state_list = np.empty((sim_timesteps - (start_time - 1), 20))  # properly sized for delayed start data collection
 action_list = np.empty((sim_timesteps - (start_time - 1), 7))
+# video gif
+gif_images = []
+img = agent.env.render(mode='rgb_array')
 
 # run simulation
 obs = env.reset()
 for i in range(sim_timesteps):
-    if i * frame_skip % MDP_TS == 0:  # only act at 5 sim timestep increments, maintain action for entire segment
+    # only act at 5 sim timestep increments, maintain action for entire segment
+    if i * frame_skip % MDP_TS == 0:
         action, _states = agent.predict(obs, deterministic=True)
+
     # collect data at every simulation timestep, not action, for smoother data
     obs, rewards, dones, info = env.step(action)
     env.render()
     # collect sim data
     if i > start_time - 1:  # delay start to reach steady state motion
         x_pos = info['x_position']  # removed from obs since x_pos is used to compute avg vel, add to state
-        state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs])  # prepend timestep info
+        state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs, [info["toe_pos"][2]]])  # prepend timestep info
         action_list[i - start_time + 1] = np.concatenate([[i*frame_skip], action])  # prepend timestep info
+        # video record
+        img = agent.env.render(mode='rgb_array')
 
 # create data collection dfs
 state_labels = ['Timestep',  # units in [m] and [rad]
@@ -64,7 +71,8 @@ state_labels = ['Timestep',  # units in [m] and [rad]
                   'ft_pos', 'fs_pos', 'ff_pos',  # front t(high), s(hin), f(oot) joint angular position
                   'x_vel', 'z_vel', 'y_vel',  # torso body frame cartesian position
                   'bt_vel', 'bs_vel', 'bf_vel',  # back t(high), s(hin), f(oot) joint angular velocity
-                  'ft_vel', 'fs_vel', 'ff_vel']  # front t(high), s(hin), f(oot) joint angular velocity
+                  'ft_vel', 'fs_vel', 'ff_vel',  # front t(high), s(hin), f(oot) joint angular velocity
+                  'btoe_height']
 
 action_labels =['Timestep',  # units in [N-m]
                   'bt_torq', 'bs_torq', 'bf_torq',  # back t(high), s(hin), f(oot) joint torque
@@ -77,7 +85,7 @@ action_df = pd.DataFrame(action_list, columns=action_labels)
 save_experiment = True
 if save_experiment:
     # output, experiment naming convention
-    exp_name = 'smallSample'
+    exp_name = 'touchdown'
     env_ver = 'v0'
     xml_ver = 'v0'
     algo = 'TD3'
@@ -88,6 +96,9 @@ if save_experiment:
     # saving experiments, df -> .csv
     state_df.to_pickle(folder + file_name + 'states.csv')
     state_df.to_pickle(folder + file_name + 'actions.csv')
+
+    # save video gif
+    imageio.mimsave(f'{exp_name}_HalfCheetah.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=29)
 
 
 

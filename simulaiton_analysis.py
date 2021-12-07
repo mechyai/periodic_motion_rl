@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import scipy
 import numpy as np
 
-states = pd.read_pickle('Experimental-Data/smallSample_v0_v0_TD3_300_300_1_states.csv')
+states = pd.read_pickle('Experimental-Data/touchdown_v0_v0_TD3_700_300_1_states.csv')
 
 """
 state_labels = ['Timestep',  # units in [m] and [rad]
@@ -20,22 +20,42 @@ action_labels =['Timestep',  # units in [N-m]
 """
 
 
+def local_minimum_indices(data_list, ceiling, min_index, max_index):
+    """Take in an array, and returns all indices of local mins under a given value ceiling."""
+    local_min_index = []
+    data_pre = data_list[0]
+    data = data_list[1]
+    for i, data_post in enumerate(data_list):
+        if i > 1:
+            if data_pre > data < data_post:  # unique local min
+                if data < ceiling and min_index < i < max_index:
+                    local_min_index.append(i-1)
+            data_pre = data
+            data = data_post
+    return local_min_index
+
+
 # drop first row
 states = states.iloc[1:, :]
-# select span
-# start = 300
-# stop = 700
-# states = states.iloc[:,start:stop]
+# select desirable periodic span
+start = 0
+stop = 700
+states = states.iloc[start:stop]
 
 # POINCARE SECTION
-period = 30 # indices, discovered empirically
-period_start = 31  # indices
-time_events = np.arange(period_start, 300, period)
-state_events = states.iloc[time_events, :]
+# Time-Based Event
+# period = 30  # indices, discovered empirically
+# period_start = 31  # indices
+# time_events = np.arange(period_start, 300, period)
+# state_events = states.iloc[time_events, :]
+# State-Based Event
+btoe_pos = states['btoe_height']  # toe contact with ground
+ground_contact_indices = local_minimum_indices(list(btoe_pos), 0.025, start, stop)  # find contacts
+state_events = states.iloc[ground_contact_indices]
+
 
 # TIMING
 timestep = states['Timestep']
-
 
 # POSITION
 # front leg
@@ -64,10 +84,10 @@ plt.close('all')
 fig_pos = plt.figure()
 ax_pos = plt.axes(projection='3d')
 # 3D plotting
-ax_pos.plot3D(fthigh_pos, fshin_pos, ffoot_pos, 'o-', linewidth=1, markersize=1, label='Front Leg')
+# ax_pos.plot3D(fthigh_pos, fshin_pos, ffoot_pos, 'o-', linewidth=1, markersize=1, label='Front Leg')
 ax_pos.plot3D(bthigh_pos, bshin_pos, bfoot_pos, 'o-', linewidth=1, markersize=1, label='Back Leg')
-ax_pos.plot3D(state_events['ft_pos'], state_events['fs_pos'], state_events['ff_pos'], 'o')
-ax_pos.plot3D(state_events['bt_pos'], state_events['bs_pos'], state_events['bf_pos'], 'o')
+# ax_pos.plot3D(state_events['ft_pos'], state_events['fs_pos'], state_events['ff_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
+ax_pos.plot3D(state_events['bt_pos'], state_events['bs_pos'], state_events['bf_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
 
 # plot labeling and config
 ax_pos.set_title('Leg Joint Position')
@@ -85,8 +105,8 @@ ax_vel = plt.axes(projection='3d')
 # 3D plotting
 ax_vel.plot3D(fthigh_vel, fshin_vel, ffoot_vel, 'o-', linewidth=1, markersize=1,  label='Front Leg')
 ax_vel.plot3D(bthigh_vel, bshin_vel, bfoot_vel, 'o-', linewidth=1, markersize=1, label='Back Leg')
-ax_vel.plot3D(state_events['ft_vel'], state_events['fs_vel'], state_events['ff_vel'], 'o')
-ax_vel.plot3D(state_events['bt_vel'], state_events['bs_vel'], state_events['bf_vel'], 'o')
+ax_vel.plot3D(state_events['ft_vel'], state_events['fs_vel'], state_events['ff_vel'], 'o', color='k', markersize=3, label='Back Leg Contact')
+ax_vel.plot3D(state_events['bt_vel'], state_events['bs_vel'], state_events['bf_vel'], 'o', color='k', markersize=3, label='Back Leg Contact')
 # plot labeling and config
 ax_vel.set_title('Leg Joint Vel')
 ax_vel.set_xlabel('Ankle Vel (rad/s)')
@@ -108,9 +128,10 @@ plt.ylabel('Pos (rad)')
 plt.grid(True)
 # back leg
 fig_b_tpos = plt.figure()
-# plt.plot(timestep, bfoot, label='Ankle')
-plt.plot(timestep, bshin_pos, label='Knee')
-# plt.plot(timestep, bthigh, label='Hip')
+# plt.plot(timestep, bfoot_pos, label='Ankle')
+# plt.plot(timestep, bshin_pos, label='Knee')
+# plt.plot(timestep, bthigh_pos, label='Hip')
+plt.plot(timestep, btoe_pos, label='Toe Height')
 plt.legend()
 plt.title('Back Leg')
 plt.xlabel('Timestep')
