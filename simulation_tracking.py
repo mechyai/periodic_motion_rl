@@ -43,8 +43,8 @@ start_time = 300  # heuristic from watching simulation
 state_list = np.empty((sim_timesteps - (start_time - 1), 20))  # properly sized for delayed start data collection
 action_list = np.empty((sim_timesteps - (start_time - 1), 7))
 # video gif
-gif_images = []
-img = agent.env.render(mode='rgb_array')
+# gif_images = []
+# img = agent.env.render(mode='rgb_array')
 
 # run simulation
 obs = env.reset()
@@ -55,6 +55,7 @@ for i in range(sim_timesteps):
 
     # collect data at every simulation timestep, not action, for smoother data
     obs, rewards, dones, info = env.step(action)
+    # gif_images.append(img)
     env.render()
     # collect sim data
     if i > start_time - 1:  # delay start to reach steady state motion
@@ -62,7 +63,7 @@ for i in range(sim_timesteps):
         state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs, [info["toe_pos"][2]]])  # prepend timestep info
         action_list[i - start_time + 1] = np.concatenate([[i*frame_skip], action])  # prepend timestep info
         # video record
-        img = agent.env.render(mode='rgb_array')
+        # img = agent.env.render(mode='rgb_array')
 
 # create data collection dfs
 state_labels = ['Timestep',  # units in [m] and [rad]
@@ -98,7 +99,7 @@ if save_experiment:
     state_df.to_pickle(folder + file_name + 'actions.csv')
 
     # save video gif
-    imageio.mimsave(f'{exp_name}_HalfCheetah.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=29)
+    # imageio.mimsave(f'{exp_name}_HalfCheetah.gif', [np.array(img) for i, img in enumerate(gif_images) if i % 2 == 0], fps=29)
 
 
 

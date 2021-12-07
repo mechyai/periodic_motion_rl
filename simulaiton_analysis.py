@@ -52,8 +52,10 @@ states = states.iloc[start:stop]
 btoe_pos = states['btoe_height']  # toe contact with ground
 ground_contact_indices = local_minimum_indices(list(btoe_pos), 0.025, start, stop)  # find contacts
 state_events = states.iloc[ground_contact_indices]
-
-
+first_event = states.iloc[ground_contact_indices[0]].to_numpy()  # first contact, use as phase event -> Poincare section
+states_np = states.to_numpy()
+first_event = states_np[ground_contact_indices[0]]
+states['Norm'] = np.linalg.norm(states_np[:,2:]-first_event[2:], axis=1)  # ! ignore timestep & x_pos column for norm
 # TIMING
 timestep = states['Timestep']
 
@@ -84,11 +86,10 @@ plt.close('all')
 fig_pos = plt.figure()
 ax_pos = plt.axes(projection='3d')
 # 3D plotting
-# ax_pos.plot3D(fthigh_pos, fshin_pos, ffoot_pos, 'o-', linewidth=1, markersize=1, label='Front Leg')
+ax_pos.plot3D(fthigh_pos, fshin_pos, ffoot_pos, 'o-', linewidth=1, markersize=1, label='Front Leg')
 ax_pos.plot3D(bthigh_pos, bshin_pos, bfoot_pos, 'o-', linewidth=1, markersize=1, label='Back Leg')
-# ax_pos.plot3D(state_events['ft_pos'], state_events['fs_pos'], state_events['ff_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
+ax_pos.plot3D(state_events['ft_pos'], state_events['fs_pos'], state_events['ff_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
 ax_pos.plot3D(state_events['bt_pos'], state_events['bs_pos'], state_events['bf_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
-
 # plot labeling and config
 ax_pos.set_title('Leg Joint Position')
 ax_pos.set_xlabel('Ankle Pos (rad)')
@@ -100,8 +101,6 @@ ax_pos.grid(True)
 # VELOCITY 3D Phase Plot
 fig_vel = plt.figure()
 ax_vel = plt.axes(projection='3d')
-
-
 # 3D plotting
 ax_vel.plot3D(fthigh_vel, fshin_vel, ffoot_vel, 'o-', linewidth=1, markersize=1,  label='Front Leg')
 ax_vel.plot3D(bthigh_vel, bshin_vel, bfoot_vel, 'o-', linewidth=1, markersize=1, label='Back Leg')
@@ -115,25 +114,44 @@ ax_vel.set_zlabel('Hip Vel (rad/s)')
 ax_vel.legend()
 ax_vel.grid(True)
 
+# STATE NORM vs Time 2D Line Plot
+# norm of distance from first toe contact with ground
+fig_norm = plt.figure()
+plt.plot(timestep, states['Norm'])
+plt.title('State Norm from 1st Toe Contact')
+plt.xlabel('Timestep')
+plt.ylabel('Vector 2-Norm')
+plt.grid(True)
+
+# POSITION vs Time 2D Line Plot
+# TOE - for Poincare section (and motion period)
+fig_b_toepos = plt.figure()
+plt.plot(timestep, btoe_pos, label='Toe Height')
+plt.legend()
+plt.title('Back Toe Position')
+plt.xlabel('Timestep')
+plt.ylabel('Height (m)')
+plt.grid(True)
+
 # POSITION vs Time 2D Line Plot
 # front leg
 fig_f_tpos = plt.figure()
-# plt.plot(timestep, ffoot, label='Ankle')
+plt.plot(timestep, ffoot_pos, label='Ankle')
 plt.plot(timestep, fshin_pos, label='Knee')
-# plt.plot(timestep, fthigh, label='Hip')
+plt.plot(timestep, fthigh_pos, label='Hip')
 plt.legend()
-plt.title('Front Leg')
+plt.title('Front Leg Joint Positions')
 plt.xlabel('Timestep')
 plt.ylabel('Pos (rad)')
 plt.grid(True)
 # back leg
 fig_b_tpos = plt.figure()
-# plt.plot(timestep, bfoot_pos, label='Ankle')
-# plt.plot(timestep, bshin_pos, label='Knee')
-# plt.plot(timestep, bthigh_pos, label='Hip')
-plt.plot(timestep, btoe_pos, label='Toe Height')
+plt.plot(timestep, bfoot_pos, label='Ankle')
+plt.plot(timestep, bshin_pos, label='Knee')
+plt.plot(timestep, bthigh_pos, label='Hip')
+# plt.plot(timestep, btoe_pos, label='Toe Height')
 plt.legend()
-plt.title('Back Leg')
+plt.title('Back Leg Joint Positions')
 plt.xlabel('Timestep')
 plt.ylabel('Pos (rad)')
 plt.grid(True)
