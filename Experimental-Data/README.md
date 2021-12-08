@@ -5,7 +5,7 @@ The file labeling is described as `name_env-ver_xml-ver_algo_sim-len_sim-start_f
 
 - name: arbitrary experiment name, if desired
 - env-ver: which custom HalfCheetah-Gait OpenAI gym environment is being used. Ex: v0 from half_cheetah_gait_v0.py
-- xml_ver: which MuJoCo XML model is being used Ex: v0 from half_cheetah_gait_v0.xml
+- xml-ver: which MuJoCo XML model is being used Ex: v0 from half_cheetah_gait_v0.xml
 - algo: abbreviated name of deep RL algorithm used
 - sim-len: length of simulation. Total lengh of simulation ran is sim-len + sim_start. Rows of data is (sim-len * frame-skip) 
 - sim-start: the simulation timestep when data collection begins. This is used to skip transients, if desired.
