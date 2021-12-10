@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import scipy
 import numpy as np
 
-states = pd.read_pickle('Experimental-Data/touchdown_v0_v0_TD3_700_300_1_states.csv')
+states = pd.read_pickle('Experimental-Data/touch_v0_v0_TD3_4700_300_1_states.csv')
 
 """
 state_labels = ['Timestep',  # units in [m] and [rad]
@@ -35,11 +35,23 @@ def local_minimum_indices(data_list, ceiling, min_index, max_index):
     return local_min_index
 
 
+def rising_edge_indices(data_list):
+    """Takes in array, and returns all indices of rising signal from 0 to greater than 0."""
+    rising_index = []
+    for i, data in enumerate(data_list):
+        if data_list[i-1] == 0 and data > 0:
+            rising_index.append(i)
+    return rising_index
+
+
+def average_trajectory(trajectory_df, column_names, event_indices):
+    pass
+
 # drop first row
 states = states.iloc[1:, :]
 # select desirable periodic span
 start = 0
-stop = 700
+stop = 2000
 states = states.iloc[start:stop]
 
 # POINCARE SECTION
@@ -50,7 +62,9 @@ states = states.iloc[start:stop]
 # state_events = states.iloc[time_events, :]
 # State-Based Event
 btoe_pos = states['btoe_height']  # toe contact with ground
-ground_contact_indices = local_minimum_indices(list(btoe_pos), 0.025, start, stop)  # find contacts
+# ground_contact_indices = local_minimum_indices(list(btoe_pos), 0.025, start, stop)  # find contacts
+ground_contact_indices = rising_edge_indices(list(btoe_pos))  # find contacts
+
 state_events = states.iloc[ground_contact_indices]
 first_event = states.iloc[ground_contact_indices[0]].to_numpy()  # first contact, use as phase event -> Poincare section
 states_np = states.to_numpy()

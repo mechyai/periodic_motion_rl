@@ -22,11 +22,14 @@ Mean reward performance for HalfCheetah-V3 TQC >> TD3 >= SAC > PPO > A2C https:/
 """
 # load trained agent from ZIP
 agent = TD3.load('Pretrained-Agents/SB3/td3_HalfCheetah-v3.zip', env=env)  # more optional params
+# agent = TD3.load('Pretrained-Agents/td3_HalfCheetah_periodic_reward_V1_.zip', env=env)  # more optional params
+
 
 # train the agent
-# agent.learn(total_timesteps=int(1e5))
+# training_time = 1e7
+# agent.learn(total_timesteps=int(training_time))
 # save the agent
-# agent.save('td3_HalfCheetah-trained)
+# agent.save(f'td3_HalfCheetah_periodic_reward_V1_', str(int(training_time)))
 
 # Evaluate the agent
 # NOTE: If you use wrappers with your environment that modify rewards,
@@ -37,7 +40,7 @@ mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episode
 # inits
 frame_skip = 1  # const fixed in other HalfCheetahEnv class (change in half_cheetah_gait_v#.py file)
 MDP_TS = 5  # agent should act/observe every 5 sim timesteps
-sim_timesteps = 1000  # num of total timsteps
+sim_timesteps = 10000  # num of total timsteps
 start_time = 300  # heuristic from watching simulation
 # data collection
 state_list = np.empty((sim_timesteps - (start_time - 1), 20))  # properly sized for delayed start data collection
@@ -55,12 +58,11 @@ for i in range(sim_timesteps):
 
     # collect data at every simulation timestep, not action, for smoother data
     obs, rewards, dones, info = env.step(action)
-    # gif_images.append(img)
     env.render()
     # collect sim data
     if i > start_time - 1:  # delay start to reach steady state motion
         x_pos = info['x_position']  # removed from obs since x_pos is used to compute avg vel, add to state
-        state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs, [info["toe_pos"][2]]])  # prepend timestep info
+        state_list[i - start_time + 1] = np.concatenate([[i*frame_skip, x_pos], obs, [info["toe_pos"][0]]])  # prepend timestep info
         action_list[i - start_time + 1] = np.concatenate([[i*frame_skip], action])  # prepend timestep info
         # video record
         # img = agent.env.render(mode='rgb_array')
@@ -83,11 +85,11 @@ action_labels =['Timestep',  # units in [N-m]
 state_df = pd.DataFrame(state_list, columns=state_labels)
 action_df = pd.DataFrame(action_list, columns=action_labels)
 
-save_experiment = True
+save_experiment = False
 if save_experiment:
     # output, experiment naming convention
-    exp_name = 'touchdown'
-    env_ver = 'v0'
+    exp_name = 'reward_exp1'
+    env_ver = 'v1'
     xml_ver = 'v0'
     algo = 'TD3'
     sim_len = (sim_timesteps - start_time)
