@@ -51,7 +51,7 @@ def average_trajectory(trajectory_df, column_names, event_indices):
 states = states.iloc[1:, :]
 # select desirable periodic span
 start = 0
-stop = 2000
+stop = 500
 states = states.iloc[start:stop]
 
 # POINCARE SECTION
@@ -101,9 +101,9 @@ fig_pos = plt.figure()
 ax_pos = plt.axes(projection='3d')
 # 3D plotting
 ax_pos.plot3D(fthigh_pos, fshin_pos, ffoot_pos, 'o-', linewidth=1, markersize=1, label='Front Leg')
-ax_pos.plot3D(bthigh_pos, bshin_pos, bfoot_pos, 'o-', linewidth=1, markersize=1, label='Back Leg')
+# ax_pos.plot3D(bthigh_pos, bshin_pos, bfoot_pos, 'o-', linewidth=1, markersize=1, label='Back Leg')
 ax_pos.plot3D(state_events['ft_pos'], state_events['fs_pos'], state_events['ff_pos'], 'o', color='k', markersize=3, label='Back Leg Contact')
-ax_pos.plot3D(state_events['bt_pos'], state_events['bs_pos'], state_events['bf_pos'], 'o', color='k', markersize=3)
+# ax_pos.plot3D(state_events['bt_pos'], state_events['bs_pos'], state_events['bf_pos'], 'o', color='k', markersize=3)
 # plot labeling and config
 ax_pos.set_title('Leg Joint Position')
 ax_pos.set_xlabel('Ankle Pos (rad)')
